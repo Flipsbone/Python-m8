@@ -1,41 +1,86 @@
+import sys
 
+def run_analysis() -> None:
+    url = "https://data.ademe.fr/data-fair/api/v1/datasets/liste-des-entreprises-rge-2/lines"
+
+    params = {
+        "q": '"Pompe à chaleur"',
+        "size": 10000,
+        "select": "code_postal"
+    }
+
+    try:
+        print("Analyzing Matrix data...")
+        print("Processing 10000 data points...")
+
+        response = requests.get(url, params=params, timeout=20)
+        response.raise_for_status()
+        data = response.json().get('results', [])
+
+        if not data:
+            print("No data found in the Matrix.")
+            return
+
+        df = pd.DataFrame(data)
+
+        df['dept'] = df['code_postal'].astype(str).str.zfill(5).str[:2]
+
+        df_stats = df['dept'].value_counts().reset_index()
+        df_stats.columns = ['Departement', 'Nombre']
+
+        counts = df_stats['Nombre'].values
+        indices_tries = np.argsort(counts)[::-1]
+        df_final = df_stats.iloc[indices_tries]
+
+        print("Generating visualization...")
+
+        plt.figure(figsize=(12, 8))
+        df_plot = df_final.head(20)
+        
+        colors = plt.cm.plasma(np.linspace(0.2, 0.8, len(df_plot)))
+        
+        bars = plt.barh(df_plot['Departement'], df_plot['Nombre'], color=colors, edgecolor='white')
+        plt.gca().invert_yaxis()
+        
+        plt.title('Distribution of RGE-Certified Heat Pump Installers by Department (10k Sample)', fontsize=14)
+        plt.xlabel('Number of Companies')
+        plt.ylabel('Department (Code)')
+
+        for bar in bars:
+            plt.text(bar.get_width() + 5, bar.get_y() + bar.get_height()/2, 
+                     int(bar.get_width()), va='center', fontweight='bold')
+
+        plt.grid(axis='x', linestyle='--', alpha=0.3)
+        plt.tight_layout()
+        plt.savefig("matrix_analysis.png")
+        
+        print("Analysis complete!")
+        print("Results saved to: matrix_analysis.png")
+
+    except Exception as e:
+        print(f"Error during execution: {e}")
+        
 def try_import_package()-> None:
     try:
-        import pandas
-        print(f"[OK] pandas ({pandas.__version__}) - Data manipulation ready")
-    except ImportError:
-        print("Missing pandas dependence")
-        print("Install by pip : pip install pandas")
-        print("Install by poetry : poetry add pandas\n")
-
-    try:
+        import pandas as pd
+        import matplotlib.pyplot as plt
+        print(f"[OK] pandas ({pd.__version__}) - Data manipulation ready")
         import requests
         print(f"[OK] requests ({requests.__version__}) - Network access ready")
-    except ImportError:
-        print("Missing requests dependence")
-        print("Install by pip : pip install requests")
-        print("Install by poetry : poetry add requests\n")
+        print(f"[OK] matplotlib ({plt.matplotlib.__version__}) - Visualization ready")
+        import numpy as np
+        print(f"[OK] numpy ({np.__version__}) - Numerical computation ready")
 
-    try:
-        import matplotlib
-        print(f"[OK] matplotlib ({matplotlib.__version__}) - Visualization ready")
-    except ImportError:
-        print("Missing matplotlib dependence")
-        print("Install by pip : pip install matplotlib")
-        print("Install by poetry : poetry add matplotlib\n")
-
-    try:
-        import numpy
-        print(f"[OK] numpy ({numpy.__version__}) - Numerical computation ready")
-    except ImportError:
-        print("Missing numpy dependence")
-        print("Install by pip : pip install numpy")
-        print("Install by poetry : poetry add numpy\n")
+    except ImportError as e:
+        print(f"[ERROR] Missing dependency: {e}")
+        print("Please install requirements using pip or poetry.")
+        sys.exit(1)
 
 def main() -> None:
     print("LOADING STATUS: Loading programs...\n")
     print("Checking dependencies:")
     try_import_package()
+    run_analysis()
 
 if __name__ == "__main__":
     main()
