@@ -4,16 +4,21 @@ import site
 
 
 def define_env() -> dict:
+    env: str | None
+    path_package: list[str] | None
+    status: str
+    exec_python: str
+    display_message: str
 
     if sys.base_prefix == sys.prefix:
-        status: str = "You're still plugged in"
-        exec_python: str = f"{sys.executable}"
-        env: str = None
-        display_message: str = (
+        status = "You're still plugged in"
+        exec_python = f"{sys.executable}"
+        env = None
+        display_message = (
             "WARNING: You're in the global environment!\n"
             "The machines can see everything you install.\n\n"
             "To enter the construct, run:\n"
-            "python -m venv matrix_env\n"
+            "python3 -m venv matrix_env\n"
         )
 
         if os.name == "posix":
@@ -25,18 +30,18 @@ def define_env() -> dict:
         else:
             display_message += ("OS not recognized. Activate venv manually.\n")
         display_message += "\nThen run this program again."
-        path_package: str = None
+        path_package = None
 
     else:
-        status: str = "Welcome to the construct"
-        exec_python: str = f"{sys.executable}"
-        env: str = f"{sys.prefix}"
-        display_message: str = (
+        status = "Welcome to the construct"
+        exec_python = f"{sys.executable}"
+        env = f"{sys.prefix}"
+        display_message = (
             "SUCCESS: You're in an isolated environment!\n"
             "Safe to install packages without affecting\n"
             "the global system.\n"
         )
-        path_package: list[str] = site.getsitepackages()
+        path_package = site.getsitepackages()
 
     return {
         "status": status,
