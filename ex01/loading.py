@@ -1,15 +1,34 @@
-try:
-    import sys
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import requests
-    import numpy as np
-    DEPENDENCIES_INSTALLED = True
-except ImportError as e:
-    DEPENDENCIES_INSTALLED = False
-    missing_module = str(e).split("'")[1] if "'" in str(e) else "required libraries"
+import sys
+import importlib
+
+def check_dependencies()-> None:
+    dependencies = {
+        "pandas": "Data manipulation ready",
+        "requests": "Network access ready",
+        "matplotlib": "Visualization ready",
+        "numpy": "Numerical computation ready"
+    }
+    all_ok = True
+
+    for name, description in dependencies.items():
+        try:
+            module = importlib.import_module(name)
+            version = getattr(module, "__version__", "unknown")
+            print(f"[OK] {name} ({version}) - {description}")
+        except ImportError:
+            print(f"[ERROR] Missing dependency: {name}")
+            all_ok = False
+
+    if not all_ok:
+        print("\n[ERROR] Missing dependencies. Please install requirements: pip install -r requirements.txt")
+        sys.exit(1)
 
 def run_analysis() -> None:
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import requests
+
     url = "https://data.ademe.fr/data-fair/api/v1/datasets/liste-des-entreprises-rge-2/lines"
 
     params = {
@@ -63,27 +82,18 @@ def run_analysis() -> None:
         plt.tight_layout()
         plt.savefig("matrix_analysis.png")
         
-        print("Analysis complete!")
-        print("Results saved to: matrix_analysis.png")
+        print("\nAnalysis complete!")
+        print(f"Results saved to: matrix_analysis.png")
 
     except Exception as e:
         print(f"Error during execution: {e}")
         
-def check_dependencies()-> None:
-    if not DEPENDENCIES_INSTALLED:
-        print(f"\n[ERROR] Missing dependency: {missing_module}")
-        print("Please install requirements: pip install -r requierement")
-        sys.exit(1)
-
-        print(f"[OK] pandas ({pd.__version__}) - Data manipulation ready")
-        print(f"[OK] requests ({requests.__version__}) - Network access ready")
-        print(f"[OK] matplotlib ({plt.matplotlib.__version__}) - Visualization ready")
-        print(f"[OK] numpy ({np.__version__}) - Numerical computation ready")
 
 def main() -> None:
     print("LOADING STATUS: Loading programs...\n")
     print("Checking dependencies:")
     check_dependencies()
+    print()
     run_analysis()
 
 if __name__ == "__main__":
