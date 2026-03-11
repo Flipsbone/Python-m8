@@ -83,7 +83,8 @@ def main() -> None:
     print("\nEnvironment security check:")
     print("[OK] No hardcoded secrets detected")
     print("[OK] .env file properly configured")
-    print("[OK] Production overrides available")
+    print("[OK] Production overrides available\n")
+    print("The Oracle sees all configurations.")
 
 
 if __name__ == "__main__":
