@@ -59,7 +59,7 @@ def load_config() -> dict[str, str]:
             }
         return config
     except KeyError as e:
-        sys.exit(f"MISSING CONFIGURATION: Please check your .env for {e}")
+        sys.exit(f"MISSING CONFIGURATION: Please check your Key=Value for {e}")
 
 
 def main() -> None:
@@ -73,7 +73,7 @@ def main() -> None:
 
     try:
         if not load_dotenv(env_path):
-            print(f"Should load configuration from {env_path} file")
+            sys.exit(f"Error load configuration from '{env_path}' file")
     except OSError as e:
         sys.exit(f"[ERROR] While accessing '{env_path}': {e}")
 
