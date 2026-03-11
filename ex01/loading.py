@@ -58,11 +58,12 @@ def run_analysis() -> None:
         df = pd.DataFrame(data)
 
         df['dept'] = df['code_postal'].astype(str).str.zfill(5).str[:2]
+        df = df[df['dept'] != "0["]
 
         df_stats = df['dept'].value_counts().reset_index()
-        df_stats.columns = ['Departement', 'Nombre']
+        df_stats.columns = ['Departement', 'Number']
 
-        counts = df_stats['Nombre'].values
+        counts = df_stats['Number'].values
         indices_tries = np.argsort(counts)[::-1]
         df_final = df_stats.iloc[indices_tries]
 
@@ -74,7 +75,7 @@ def run_analysis() -> None:
         colors = plt.cm.plasma(np.linspace(0.2, 0.8, len(df_plot)))
 
         bars = plt.barh(df_plot['Departement'],
-                        df_plot['Nombre'],
+                        df_plot['Number'],
                         color=colors,
                         edgecolor='white')
         plt.gca().invert_yaxis()
